@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build code and analyze with SonarQube
-        uses: actions/checkout@v4 # Replace with the correct action for SonarQube
+        uses: actions/checkout@master # Replace with the correct action for SonarQube
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -30,9 +30,9 @@ jobs:
       - name: Docker build and push
         run: |
           echo  ${{ secrets.DOCKERHUB_TOKEN }}$DOCKERHUB_TOKEN | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker build -t manlineroot12/zomato .
-          docker tag manlineroot12/zomato:latest manlineroot12/zomato:latest
-          docker push manlineroot12/zomato:latest
+          docker build -t jackquick/zomato .
+          docker tag jackquick/zomato:latest jackquick/zomato:latest
+          docker push jackquick/zomato:latest
         env:
           DOCKER_CLI_ACL: 1
 
@@ -42,10 +42,10 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Pull Docker image
-        run: docker pull manlineroot12/zomato:latest
+        run: docker pull jackquick/zomato:latest
 
       - name: Image scan with Trivy
-        run: trivy image manlineroot12/zomato:latest > image-trivy-scan.txt
+        run: trivy image jackquick/zomato:latest > image-trivy-scan.txt
 
       - name: Run Docker container
-        run: docker run -itd -p 3000:3000 --name zomato manlineroot12/zomato:latest
+        run: docker run -itd -p 3000:3000 --name zomato jackquick/zomato:latest
