@@ -30,9 +30,9 @@ jobs:
       - name: Docker build and push
         run: |
           echo  ${{ secrets.DOCKERHUB_TOKEN }}$DOCKERHUB_TOKEN | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker build -t raghadisraghad/zomato .
-          docker tag raghadisraghad/zomato:latest raghadisraghad/zomato:latest
-          docker push raghadisraghad/zomato:latest
+          docker build -t manlineroot12/zomato .
+          docker tag manlineroot12/zomato:latest manlineroot12/zomato:latest
+          docker push manlineroot12/zomato:latest
         env:
           DOCKER_CLI_ACL: 1
 
@@ -42,10 +42,10 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Pull Docker image
-        run: docker pull raghadisraghad/zomato:latest
+        run: docker pull manlineroot12/zomato:latest
 
       - name: Image scan with Trivy
-        run: trivy image raghadisraghad/zomato:latest > image-trivy-scan.txt
+        run: trivy image manlineroot12/zomato:latest > image-trivy-scan.txt
 
       - name: Run Docker container
-        run: docker run -itd -p 3000:3000 --name zomato raghadisraghad/zomato:latest
+        run: docker run -itd -p 3000:3000 --name zomato manlineroot12/zomato:latest
