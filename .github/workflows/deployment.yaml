@@ -1,5 +1,4 @@
-name: build-analyze-scan
-
+name: build analyze, scan
 on:
   push:
     branches:
@@ -7,45 +6,35 @@ on:
 
 jobs:
   build-analyze-scan:
-    name: Build, Analyze, and Scan
-    runs-on: self-hosted
+    name: build
+    runs-on: [self-hosted]
     steps:
-      - name: Checkout the code
+      - name: checkout the code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Build code and analyze with SonarQube
-        uses: actions/checkout@master # Replace with the correct action for SonarQube
+      - name: BUilding code and analyze with SonarQube
+        uses: actions/checkout@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Trivy vulnerability scan
-        run: trivy fs . --format json -o trivy-report.json
-
-      - name: Docker build and push
+      - name: dependencies install
         run: |
-          echo  ${{ secrets.DOCKERHUB_TOKEN }}$DOCKERHUB_TOKEN | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker build -t jackquick/zomato .
-          docker tag jackquick/zomato:latest jackquick/zomato:latest
-          docker push jackquick/zomato:latest
-        env:
-          DOCKER_CLI_ACL: 1
-
+          npm install
   deploy:
-    name: Deploy app to Docker
+    name: deploy app to docker
     needs: build-analyze-scan
-    runs-on: self-hosted
+    runs-on: [self-hosted]
     steps:
-      - name: Pull Docker image
-        run: docker pull jackquick/zomato:latest
-
-      - name: Image scan with Trivy
-        run: trivy image jackquick/zomato:latest > image-trivy-scan.txt
-
-      - name: Run Docker container
-        run: docker run -itd -p 3000:3000 --name zomato jackquick/zomato:latest
+      - name: docker pull
+        run: docker pull manlineroot12/zomato:latest
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: update-kubeconfig
+        run: aws eks update-kubeconfig --name Zomato-demo-cluster --region ap-south-1
+      - name: Deploy to kubernetes
+        run: kubectl apply -f deployment-service.yml
