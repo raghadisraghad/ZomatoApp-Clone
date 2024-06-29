@@ -15,23 +15,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build code
-        run: npm install
-
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v3
+      - name: Build code and analyze with SonarQube
+        uses: actions/checkout@master # Replace with the correct action for SonarQube
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # Add your SonarQube token as a secret
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}  # Add your SonarQube server URL as a secret
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Trivy vulnerability scan
         run: trivy fs . --format json -o trivy-report.json
 
       - name: Docker build and push
         run: |
-          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          echo  ${{ secrets.DOCKERHUB_TOKEN }}$DOCKERHUB_TOKEN | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           docker build -t jackquick/zomato .
+          docker tag jackquick/zomato:latest jackquick/zomato:latest
           docker push jackquick/zomato:latest
+        env:
+          DOCKER_CLI_ACL: 1
 
   deploy:
     name: Deploy app to Docker
