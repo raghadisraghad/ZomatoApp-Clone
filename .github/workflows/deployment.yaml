@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build code and analyze with SonarQube
-        uses: actions/checkout@master # Replace with the correct action for SonarQube
+        uses: sonarsource/sonarqube-scan-action@master # Replace with the correct action for SonarQube
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
